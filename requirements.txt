@@ -1,5 +1,5 @@
-gracc-reporting
-elasticsearch_dsl
+# gracc-reporting
+opensearch-py
 requests
 numpy
 pandas

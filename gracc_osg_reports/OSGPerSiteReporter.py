@@ -3,7 +3,7 @@ import sys
 import datetime
 from collections import defaultdict
 
-from elasticsearch_dsl import Search
+from opensearchpy import Search
 
 from gracc_reporting import ReportUtils, TimeUtils
 

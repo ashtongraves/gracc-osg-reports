@@ -10,7 +10,7 @@ import datetime
 import calendar
 import dateutil.parser
 
-from elasticsearch_dsl import Search
+from opensearchpy import Search
 
 from gracc_reporting import ReportUtils
 

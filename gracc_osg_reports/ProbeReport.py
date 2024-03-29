@@ -13,7 +13,7 @@ import datetime
 import dateutil
 import argparse
 
-from elasticsearch_dsl import Search, Q
+from opensearchpy import Search, Q
 
 from gracc_reporting import ReportUtils
 

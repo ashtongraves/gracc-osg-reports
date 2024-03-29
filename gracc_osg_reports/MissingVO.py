@@ -7,7 +7,7 @@ import argparse
 import requests
 import xml.etree.ElementTree as ET
 
-from elasticsearch_dsl import Search
+from opensearchpy import Search
 
 from gracc_reporting import ReportUtils
 

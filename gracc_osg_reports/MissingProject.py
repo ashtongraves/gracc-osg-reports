@@ -7,7 +7,7 @@ import sys
 import copy
 import argparse
 
-from elasticsearch_dsl import Search
+from opensearchpy import Search
 
 from gracc_reporting import ReportUtils
 from .ProjectNameCollector import ProjectNameCollector

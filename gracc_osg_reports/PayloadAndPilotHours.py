@@ -15,7 +15,7 @@ import yaml
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-from elasticsearch_dsl import Search
+from opensearchpy import Search
 
 from gracc_reporting import ReportUtils
 

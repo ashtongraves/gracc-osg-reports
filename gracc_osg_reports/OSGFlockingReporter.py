@@ -4,7 +4,7 @@ import sys
 from collections import defaultdict
 import argparse
 
-from elasticsearch_dsl import Search
+from opensearchpy import Search
 
 from gracc_reporting import ReportUtils, TimeUtils
 
