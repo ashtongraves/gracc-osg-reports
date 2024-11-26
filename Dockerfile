@@ -1,11 +1,10 @@
 FROM python:3-slim
 ARG version
 
-RUN apt-get update && apt-get install -y git
-# && apt-get install -y git libpq-dev gcc
+RUN apt-get update && apt-get install -y git gettext-base
 
 ADD . /gracc-osg-reports
-RUN git clone https://github.com/opensciencegrid/gracc-reporting.git /gracc-reporting
+RUN git clone https://github.com/ashtongraves/gracc-reporting.git /gracc-reporting
 WORKDIR /gracc-reporting
 RUN pip install -r requirements.txt
 RUN python setup.py install
