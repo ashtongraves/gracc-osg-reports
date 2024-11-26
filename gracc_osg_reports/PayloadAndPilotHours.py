@@ -19,7 +19,6 @@ from opensearchpy import Search
 
 from gracc_reporting import ReportUtils
 
-LOGFILE = 'osgpayloadandbatch.log'
 MAXINT = 2**31 - 1
 
 
@@ -312,7 +311,6 @@ class PayloadAndPilotHours(ReportUtils.Reporter):
 
 def main():
     args = parse_report_args()
-    logfile_fname = args.logfile if args.logfile is not None else LOGFILE
 
     try:
         r = PayloadAndPilotHours(config_file=args.config,
@@ -321,13 +319,12 @@ def main():
                         verbose=args.verbose,
                         is_test=args.is_test,
                         no_email=args.no_email,
-                        logfile=logfile_fname,
                         template=args.template)
         r.run_report()
         r.logger.info("OSG Payload and Batch Report executed successfully")
 
     except Exception as e:
-        ReportUtils.runerror(args.config, e, traceback.format_exc(), args.logfile)
+        ReportUtils.runerror(args.config, e, traceback.format_exc())
         sys.exit(1)
     sys.exit(0)
 

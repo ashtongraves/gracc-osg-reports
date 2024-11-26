@@ -11,7 +11,6 @@ from opensearchpy import Search
 
 from gracc_reporting import ReportUtils
 
-LOGFILE = 'osgprojectreporter.log'
 MAXINT = 2**31 - 1
 
 
@@ -175,7 +174,6 @@ class MissingVOReporter(ReportUtils.Reporter):
 
 def main():
     args = ReportUtils.get_report_parser().parse_args()
-    logfile_fname = args.logfile if args.logfile is not None else LOGFILE
 
     #try:
     r = MissingVOReporter(config_file=args.config,
@@ -184,16 +182,9 @@ def main():
                     verbose=args.verbose,
                     is_test=args.is_test,
                     no_email=args.no_email,
-                    logfile=logfile_fname,
                     template=args.template)
     r.run_report()
     r.logger.info("OSG Missing VO Report executed successfully")
-
-    #except Exception as e:
-    #    ReportUtils.runerror(args.config, e, traceback.format_exc(), args.logfile)
-    #    sys.exit(1)
-    #sys.exit(0)
-
 
 if __name__=="__main__":
     main()

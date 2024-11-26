@@ -7,8 +7,7 @@ previously packaged along with the underlying libraries [gracc-reporting](https:
 but have now been separated out to facilitate independent development on the reports or the libraries on which they 
 depend.
 
-For each report, you can specify a non-standard location for the config file with -c, template file with -T, or 
-a logfile with -L.  In the absence of the latter, the reports log to stdout.  The -d, -n, and -v flags are, 
+For each report, you can specify a non-standard location for the config file with -c, template file with -T. The -d, -n, and -v flags are, 
 respectively, dryrun (test), no email, and verbose.
 
 
