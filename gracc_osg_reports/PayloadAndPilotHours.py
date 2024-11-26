@@ -101,34 +101,29 @@ class PayloadAndPilotHours(ReportUtils.Reporter):
         return s
 
 
-    def download_sites(self) -> list:
+    def load_sites(self) -> list:
         """Downloads the list of sites from github raw and parses it
 
         :return list: List of sites
         """
-        # Download the list of sites from github raw and parse it
         if self.sites is not None:
             return self.sites
         self.sites = []
         self.overrides = {}
-        sites_url = self.config[self.report_type.lower()]['sites_url']
-        response = requests.get(sites_url)
-        if response.status_code == 200:
-            # We got the sites config, parse it as yaml
-            sites_config = yaml.safe_load(response.text)
+        sites_path = self.config[self.report_type.lower()]['sites_path']
+        with open(sites_path) as stream:
+            try:
+                sites_config = yaml.safe_load(stream)
+            except yaml.YAMLError as err:
+                print(err)
 
-            # sites is just a list of the keys
-            self.sites = list(sites_config.keys())
+        self.sites = list(sites_config.keys())
 
-            # But, we have to loop through all the sites looking for name_overrides
-            for site in sites_config.keys():
-                if sites_config[site] == None:
-                    continue
-                if 'name_override' in sites_config[site]:
-                    self.overrides[site] = sites_config[site]['name_override']
-
-        else:
-            self.logger.error("Unable to download sites from github.  Status code: {}".format(response.status_code))
+        for site in sites_config.keys():
+            if sites_config[site] == None:
+                continue
+            if 'name_override' in sites_config[site]:
+                self.overrides[site] = sites_config[site]['name_override']
         return self.sites
 
 
@@ -138,7 +133,7 @@ class PayloadAndPilotHours(ReportUtils.Reporter):
         
         # These could probably be combined into one query, but I'm not sure how to do that
         # Or these could be farmed out to separate threads or processes
-        sites = self.download_sites()
+        sites = self.load_sites()
         #sites = self.config[self.report_type.lower()]['sites']
         response_payload = self.query("Payload", sites).execute()
         response_pilot = self.query("Batch", sites).execute()
@@ -264,7 +259,7 @@ class PayloadAndPilotHours(ReportUtils.Reporter):
         table.sort_values(by=["OIM_Site", "Values", "ResourceType"], ascending=[True, True, True], inplace=True)
 
         # Reindex the table to put the sites in the order from the downloaded sites file
-        table = table.reindex(self.download_sites(), level=0)
+        table = table.reindex(self.load_sites(), level=0)
 
         # Add a blank row between each site
         # Calculate the total size of the new dataframe, 1 new row for each 2 existing rows
