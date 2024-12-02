@@ -9,8 +9,7 @@ import argparse
 
 from opensearchpy import Search
 
-from utils import ReportUtils
-from .ProjectNameCollector import ProjectNameCollector
+from utils import ReportUtils, ProjectNameCollector
 
 
 MAXINT = 2**31 - 1
