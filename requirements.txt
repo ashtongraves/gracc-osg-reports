@@ -7,4 +7,3 @@ pyyaml
 python-dateutil
 toml
 tabulate
-setuptools
