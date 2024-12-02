@@ -4,3 +4,4 @@ numpy
 pandas
 toml
 tabulate
+pyyaml
