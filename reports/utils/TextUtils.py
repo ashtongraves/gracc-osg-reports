@@ -1,9 +1,7 @@
 """This module provides static methods to create ascii, csv, and html attachment and send email to specified group of people. """
 
-import time
 import sys
 import datetime
-from io import StringIO
 import smtplib
 from email.message import EmailMessage
 import tabulate

@@ -1,9 +1,5 @@
-import re
-import traceback
-import sys
 import copy
 from collections import defaultdict
-import argparse
 import requests
 import xml.etree.ElementTree as ET
 

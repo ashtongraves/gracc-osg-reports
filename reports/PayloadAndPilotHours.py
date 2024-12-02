@@ -2,14 +2,10 @@ import re
 import traceback
 import sys
 import copy
-from collections import defaultdict
 import argparse
 import pandas as pd
 import numpy as np
 import datetime
-import calendar
-import dateutil.parser
-import requests
 import yaml
 
 import urllib3

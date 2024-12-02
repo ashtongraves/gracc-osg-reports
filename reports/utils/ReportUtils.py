@@ -7,7 +7,6 @@ from email.mime.text import MIMEText
 import logging
 import operator
 import os
-import pkg_resources
 import json
 import toml
 import copy

@@ -3,7 +3,5 @@ opensearch-py
 requests
 numpy
 pandas
-pyyaml
-python-dateutil
 toml
 tabulate
