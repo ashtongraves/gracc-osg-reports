@@ -9,7 +9,7 @@ import argparse
 
 from opensearchpy import Search
 
-from gracc_reporting import ReportUtils
+from utils import ReportUtils
 from .ProjectNameCollector import ProjectNameCollector
 
 

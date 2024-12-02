@@ -12,7 +12,7 @@ import dateutil.parser
 
 from opensearchpy import Search
 
-from gracc_reporting import ReportUtils
+from utils import ReportUtils
 
 MAXINT = 2**31 - 1
 

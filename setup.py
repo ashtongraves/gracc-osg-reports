@@ -3,13 +3,13 @@ import sys
 from setuptools import setup
 
 setup(name='gracc-osg-reports',
-      version='3.4.0',
+      version='3.5.0',
       description='OSG GRACC Email Reports',
       author_email='sbhat@fnal.gov',
       author='Shreyas Bhat',
       url='https://github.com/opensciencegrid/gracc-reporting',
       packages=['gracc_osg_reports'],
-      install_requires=['gracc_reporting', 'opensearch-py', 'requests', 'pandas'],
+      install_requires=['opensearch-py', 'requests', 'pandas'],
       entry_points={
           'console_scripts': [
               'osgflockingreport = gracc_osg_reports.OSGFlockingReporter:main',

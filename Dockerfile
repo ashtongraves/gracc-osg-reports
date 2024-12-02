@@ -1,17 +1,12 @@
 FROM python:3-slim
 ARG version
 
-RUN apt-get update && apt-get install -y git gettext-base
+RUN apt-get update && apt-get install -y gettext-base
 
-ADD . /gracc-osg-reports
-RUN git clone https://github.com/ashtongraves/gracc-reporting.git /gracc-reporting
-WORKDIR /gracc-reporting
+ADD html_templates /tmp/html_templates
+RUN mkdir /tmp/gracc-osg-reports-config
+ADD setup.py requirements.txt /app/
+ADD gracc_osg_reports /app/gracc_osg_reports/
+WORKDIR /app
 RUN pip install -r requirements.txt
 RUN python setup.py install
-WORKDIR /gracc-osg-reports
-RUN pip install -r requirements.txt
-RUN python setup.py install
-
-RUN mkdir /tmp/html_templates && mkdir /tmp/gracc-osg-reports-config
-
-RUN cp /gracc-osg-reports/html_templates/* /tmp/html_templates
