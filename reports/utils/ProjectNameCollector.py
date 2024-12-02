@@ -3,7 +3,7 @@
 import sys
 import optparse
 
-from utils import XDProject
+from .XDProject import XDProject
 
 __author__ = "Tanya Levshina"
 __email__ = "tlevshin@fnal.gov"
