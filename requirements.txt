@@ -1,4 +1,3 @@
-# gracc-reporting
 opensearch-py
 requests
 numpy
