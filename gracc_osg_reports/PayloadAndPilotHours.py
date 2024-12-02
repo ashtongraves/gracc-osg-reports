@@ -54,7 +54,6 @@ class PayloadAndPilotHours(ReportUtils.Reporter):
                                           start=start,
                                           end=end,
                                           **kwargs)
-        #self.report_type = "MonthlySites"
         self.title = "OSG Payload and Pilot hours per site {}".format(datetime.datetime.now().strftime("%Y-%m-%d"))
         self.logger.info("Report Type: {0}".format(self.report_type))
         self.sites = None
@@ -101,7 +100,7 @@ class PayloadAndPilotHours(ReportUtils.Reporter):
 
 
     def load_sites(self) -> list:
-        """Downloads the list of sites from github raw and parses it
+        """Loads list of sites from file
 
         :return list: List of sites
         """
