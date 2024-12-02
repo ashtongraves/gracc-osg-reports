@@ -10,7 +10,6 @@ import tabulate
 import pandas as pd
 from email.utils import formataddr
 
-from . import NiceNum
 
 
 ##########################################
