@@ -9,7 +9,7 @@ import argparse
 
 from opensearchpy import Search
 
-from utils import ReportUtils, ProjectNameCollector
+from utils import ReportUtils
 
 
 MAXINT = 2**31 - 1
@@ -22,7 +22,7 @@ def parse_report_args():
     """
     parser = argparse.ArgumentParser(parents=[ReportUtils.get_report_parser()])
     parser.add_argument("-r", "--report-type", dest="report_type",
-                        type=str, help="Report type (OSG, XD, or OSG-Connect")
+                        type=str, help="Report type (OSG or OSG-Connect")
     return parser.parse_args()
 
 
@@ -44,10 +44,8 @@ class MissingProjectReport(ReportUtils.Reporter):
         
         # Temp files
         self.fname = 'OIM_Project_Name_Request_for_{0}'.format(self.report_type)
-        self.fxdadminname = 'OIM_XD_Admin_email_for_{0}'.format(self.report_type)
-        for f in (self.fname, self.fxdadminname):  # Cleanup
-            if os.path.exists(f):
-                os.unlink(f)
+        if os.path.exists(self.fname):
+            os.unlink(self.fname)
 
     def run_report(self):
         """Higher level method to handle the process flow of the report
@@ -145,11 +143,33 @@ class MissingProjectReport(ReportUtils.Reporter):
             self._check_project(item)
 
         # Send the emails, delete temp files
-        for group in ((self.fname, False),
-                      (self.fxdadminname, True)):
-            if os.path.exists(group[0]):
-                self.send_email(xd_admins=group[1])
-                os.unlink(group[0])
+        if os.path.exists(self.fname):
+            self.send_email()
+            os.unlink(self.fname)
+
+    @staticmethod
+    def no_name(name):
+        return name == 'N/A' or name.upper() == "UNKNOWN"
+
+    def create_request_to_register_oim(self, name, source, p=None, altfile=None):
+        """Creates file with information related to project that will be sent later to OSG secretary
+        Args:
+            name(str) - project name
+            source(str) - OSG, or  OSG-Connect"
+            p(Project) - project
+            altfile(str) - alternative file to write to
+        """
+        if not altfile:
+            filename = "OIM_Project_Name_Request_for_{0}".format(source)
+        else:
+            filename = altfile
+
+        with open(filename, 'a') as f:
+            f.write("Project names that are reported from {0} but not "
+                    "registered in OIM\n".format(source))
+            f.write("ProjectName: {0}\n".format(name))
+
+        return filename
 
     def _check_osg_or_osg_connect(self, data):
         """
@@ -171,42 +191,18 @@ class MissingProjectReport(ReportUtils.Reporter):
         :param dict data: Aggregated data about a missing project from ES query
         :return:
         """
-        PNC = ProjectNameCollector(self.config)
-
         p_name = data.get('RawProjectName')
 
-        if not p_name or PNC.no_name(p_name):
+        if not p_name or self.no_name(p_name):
             # No real Project Name in records
             self._write_noname_message(data)
             return
         elif self._check_osg_or_osg_connect(data):
             # OSG should have kept this up to date
-            PNC.create_request_to_register_oim(p_name, self.report_type)
+            self.create_request_to_register_oim(p_name, self.report_type)
             return
         else:
-            # XD project, most likely
-            p_info = PNC.get_project(p_name, source=self.report_type)
-            if not p_info and self.report_type == 'XD':
-                # Project not in XD database
-                self._write_XD_not_in_db_message(p_name)
             return
-
-    def _write_XD_not_in_db_message(self, name):
-        """
-        Appends message to a temp file that indicates that an XD project is not
-        registered in the XD database.
-
-        :param str name: name of XD project
-        :return:
-        """
-        msg = "The project {0} that was reported in Payload records to GRACC" \
-              " is not registered in the XD database.  Please investigate and" \
-              " register it if it is needed.\n".format(name)
-
-        with open(self.fxdadminname, 'a') as f:
-            f.write(msg)
-
-        return
 
     def _write_noname_message(self, data):
         """
@@ -243,25 +239,14 @@ class MissingProjectReport(ReportUtils.Reporter):
 
         return
 
-    def send_email(self, xd_admins=False):
+    def send_email(self):
         """
         Sets email parameters and sends email.
-
-        :param bool xd_admins: Flag to override self.email_info dict to send
-        a notification email to the xd_admins as listed in the config file.
         :return:
         """
         COMMASPACE = ', '
 
-        if xd_admins:
-            if not self.is_test:
-                self.email_info['to'] = {key: self.config['project']['xd']['admins_to_{0:s}s'.format(key)]
-                                         for key in ('email', 'name')}
-                self.logger.info("xd_admins flag is True.  Sending email to "
-                                 "xd_admins")
-            fname = self.fxdadminname
-        else:
-            fname = self.fname
+        fname = self.fname
 
         if self.check_no_email(self.email_info['to']['email']):
             return
@@ -279,11 +264,7 @@ class MissingProjectReport(ReportUtils.Reporter):
                     for pair in zip(
                 *(self.email_info['to'][key]
                  for key in ('name', 'email')))]
-
-        if xd_admins:
-            msg['Subject'] = 'XD Projects not found in XD database'
-        else:
-            msg['Subject'] = 'Records with no Project or Projects not ' \
+        msg['Subject'] = 'Records with no Project or Projects not ' \
                              'registered in OIM'
         msg['To'] = COMMASPACE.join(to_stage)
         msg['From'] = email.utils.formataddr((self.email_info['from']['name'],
@@ -309,11 +290,10 @@ class MissingProjectReport(ReportUtils.Reporter):
         """
         Validates that the report being run is one of three types.
 
-        :param str report_type: One of OSG, XD, or OSG-Connect
+        :param str report_type: One of OSG  or OSG-Connect
         :return report_type: report type
         """
-        validtypes = {"OSG": "OSG-Direct", "XD": "OSG-XD",
-                      "OSG-Connect": "OSG-Connect"}
+        validtypes = {"OSG": "OSG-Direct", "OSG-Connect": "OSG-Connect"}
         if report_type in validtypes:
             return report_type
         else:

@@ -89,11 +89,6 @@ class ProjectName:
 
         return self.abstract
 
-    def get_project_name(self):
-        """getter ProjectName"""
-
-        return self.name
-
     def get_last_name(self):
         """getter LastName"""
 

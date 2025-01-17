@@ -35,7 +35,7 @@ def parse_report_args():
 class PayloadAndPilotHours(ReportUtils.Reporter):
     """Class to hold the information for and run the OSG Project Report
 
-    :param str report_type: OSG, XD. or OSG-Connect
+    :param str report_type: OSG or OSG-Connect
     :param str config_file: Configuration file
     :param str start: Start time for report range
     :param str end: End time for report range
