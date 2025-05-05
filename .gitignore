@@ -1,5 +1,6 @@
 # Python binaries
 *.py[cod]
 *.log
-
-config/*.toml
+osg.toml
+payload-pilot-sites.yaml
+amalgo.txt

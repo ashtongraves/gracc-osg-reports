@@ -148,6 +148,11 @@ class Reporter(object, metaclass=abc.ABCMeta):
         CSV and HTML generation"""
         pass
 
+    def generate_htmlargs(self, table: pd.DataFrame):
+        """Method to be overriden by reports to generate additional args to
+        embed in html templates"""
+        pass
+
     def send_report(self, title=None, successmessage=None):
         """Send reports as ascii, csv, html attachments.
 
@@ -214,6 +219,9 @@ class Reporter(object, metaclass=abc.ABCMeta):
 
             # Build the HTML file from the template
             htmldict = dict(title=self.title, header=htmlheader, table=htmldata)
+            htmlargs = self.generate_htmlargs(content)
+            if htmlargs:
+                htmldict = {**htmldict, **htmlargs}
             htmltext = htmltext.format(**htmldict)
             text["html"] = htmltext
 

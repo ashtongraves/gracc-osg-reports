@@ -88,17 +88,16 @@ def sendEmail(toList, subject, content, fromEmail=None, smtpServerHost=None, smt
     msg = EmailMessage()
     msg["Subject"] = subject
     msg["From"] = formataddr(fromEmail)
-    msg["To"] = _toStr(toList)
-    # new code
-    if "text" in content:
-        msg.set_content(content["text"], 'plain')
-        msg.add_alternative("<pre>" + content["text"] + "</pre>", subtype="html")
+    msg["To"] = _toStr(toList) 
 
     if html_template:
+        msg.set_content(content["html"], subtype="html")
+        msg.add_alternative(content.get("text", ""), subtype="plain")
         attachment_html = content["html"]
     else:
-        attachment_html = "<html><head><title>%s</title></head><body>%s</body>" \
-                      "</html>" % (subject, content["html"])
+        msg.set_content("<pre>" + content["text"] + "</pre>", subtype="html")
+        msg.add_alternative(content["text"], subtype="plain")
+        attachment_html = "<html><head><title>%s</title></head><body>%s</body></html>" % (subject, content["html"])
 
     msg.add_attachment(attachment_html, filename="report_{}.html".format(datetime.datetime.now().strftime('%Y_%m_%d')))
     if "csv" in content:

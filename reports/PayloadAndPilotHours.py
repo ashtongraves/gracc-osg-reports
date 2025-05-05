@@ -55,6 +55,47 @@ class PayloadAndPilotHours(ReportUtils.Reporter):
         self.sites = None
         self.overrides = {}
 
+    def generate_htmlargs(self, table: pd.DataFrame) -> dict:
+        # Filter out bad rows
+        table = table.dropna(subset=["OIM_Site", "ResourceType", "Values"])
+
+        # Identify date columns (MM-DD format)
+        date_cols = [col for col in table.columns if re.match(r"\d{2}-\d{2}", col)]
+        recent_cols = date_cols[-3:]  # Last 3 days only
+
+        sites = table["OIM_Site"].unique().tolist()
+        total_sites = len(sites)
+        all_zero_sites = 0
+        payload_zero_sites = 0
+
+        for site in sites:
+            site_data = table[table["OIM_Site"] == site]
+
+            payload_rows = site_data[
+                (site_data["ResourceType"] == "Payload") &
+                (site_data["Values"].isin(["#Jobs", "Hours"]))
+            ]
+            batch_rows = site_data[
+                (site_data["ResourceType"] == "Batch") &
+                (site_data["Values"].isin(["#Jobs", "Hours"]))
+            ]
+
+            payload_sum = payload_rows[recent_cols].fillna(0).sum(axis=1).sum()
+            batch_sum = batch_rows[recent_cols].fillna(0).sum(axis=1).sum()
+
+            if payload_sum == 0 and batch_sum == 0:
+                all_zero_sites += 1
+            elif payload_sum == 0 and batch_sum > 0:
+                payload_zero_sites += 1
+
+        return {
+            "total_sites": total_sites,
+            "all_zero_sites": all_zero_sites,
+            "payload_zero_sites": payload_zero_sites
+        }
+
+
+
     def run_report(self):
         """Higher level method to handle the process flow of the report
         being run"""
@@ -296,6 +337,8 @@ class PayloadAndPilotHours(ReportUtils.Reporter):
 
         # Convert the sites (first column) using the overrides dictionary
         table.rename(index=self.overrides, level=0, inplace=True)
+
+
 
         # Create the report
 

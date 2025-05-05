@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{title}</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background-color: #f5f5f5;
+        }}
+        .container {{
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }}
+        h1 {{
+            color: #333;
+            font-size: 24px;
+        }}
+        p {{
+            font-size: 16px;
+            margin-bottom: 20px;
+        }}
+        .highlight {{
+            font-weight: bold;
+            color: #d9534f;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{title}</h1>
+        <p>Total number of sites listed: <span class="highlight">{total_sites}</span></p>
+        <p>Sites with <strong>all</strong>  zeroes over past 3 days: <span class="highlight">{all_zero_sites}</span></p>
+        <p>Sites with <strong>Payload only</strong> zeroes over past 3 days: <span class="highlight">{payload_zero_sites}</span></p>
+    </div>
+</body>
+</html>
