@@ -153,6 +153,11 @@ class Reporter(object, metaclass=abc.ABCMeta):
         embed in html templates"""
         pass
 
+    def generate_body(self, values: dict):
+        """Method to be overriden by reports to generate text body to
+        put in emails"""
+        pass
+
     def send_report(self, title=None, successmessage=None):
         """Send reports as ascii, csv, html attachments.
 
@@ -224,6 +229,18 @@ class Reporter(object, metaclass=abc.ABCMeta):
                 htmldict = {**htmldict, **htmlargs}
             htmltext = htmltext.format(**htmldict)
             text["html"] = htmltext
+
+            # Override text if we've implemented a generate_body function
+            try:
+                self.logger.info("Attempting to generate text body")
+                textbody = self.generate_body(htmldict)
+                if textbody:
+                    self.logger.info("Text body generated successfully, updating text")
+                    text["text"] = textbody
+                else:
+                    self.logger.info("generate_body returned empty result")
+            except Exception as e:
+                self.logger.error(f"Failed to generate text body: {str(e)}")
 
         else:
             text["html"] = "<html><body><h2>{0}</h2><table border=1>{1}</table></body></html>".format(

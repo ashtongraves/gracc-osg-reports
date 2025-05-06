@@ -55,44 +55,122 @@ class PayloadAndPilotHours(ReportUtils.Reporter):
         self.sites = None
         self.overrides = {}
 
+    def generate_body(self, values: dict):
+        try:
+            # Log the input values
+            self.logger.debug(f"Input values: {values}")
+            
+            body = "{title}\n" + \
+                "Total number of sites listed: {total_sites}\n" + \
+                "Sites with all zeroes over past 3 days: {all_zero_sites}\n" + \
+                "Sites with Payload only zeroes over past 3 days: {payload_zero_sites}\n\n"
+            
+            # Format the body with the values
+            formatted_body = body.format(**values)
+            
+            self.logger.info(f"Successfully generated text body with {len(values)} values")
+            self.logger.debug(f"Generated body: {formatted_body}")
+            
+            return formatted_body
+            
+        except KeyError as e:
+            # Log missing keys
+            self.logger.error(f"Missing key in template: {e}")
+            self.logger.debug(f"Available keys: {list(values.keys())}")
+            raise
+            
+        except Exception as e:
+            # Log any other errors
+            self.logger.error(f"Error generating body: {str(e)}")
+            self.logger.exception("Exception details:")
+            raise
+
     def generate_htmlargs(self, table: pd.DataFrame) -> dict:
-        # Filter out bad rows
-        table = table.dropna(subset=["OIM_Site", "ResourceType", "Values"])
-
-        # Identify date columns (MM-DD format)
-        date_cols = [col for col in table.columns if re.match(r"\d{2}-\d{2}", col)]
-        recent_cols = date_cols[-3:]  # Last 3 days only
-
-        sites = table["OIM_Site"].unique().tolist()
-        total_sites = len(sites)
-        all_zero_sites = 0
-        payload_zero_sites = 0
-
-        for site in sites:
-            site_data = table[table["OIM_Site"] == site]
-
-            payload_rows = site_data[
-                (site_data["ResourceType"] == "Payload") &
-                (site_data["Values"].isin(["#Jobs", "Hours"]))
-            ]
-            batch_rows = site_data[
-                (site_data["ResourceType"] == "Batch") &
-                (site_data["Values"].isin(["#Jobs", "Hours"]))
-            ]
-
-            payload_sum = payload_rows[recent_cols].fillna(0).sum(axis=1).sum()
-            batch_sum = batch_rows[recent_cols].fillna(0).sum(axis=1).sum()
-
-            if payload_sum == 0 and batch_sum == 0:
-                all_zero_sites += 1
-            elif payload_sum == 0 and batch_sum > 0:
-                payload_zero_sites += 1
-
-        return {
-            "total_sites": total_sites,
-            "all_zero_sites": all_zero_sites,
-            "payload_zero_sites": payload_zero_sites
-        }
+        self.logger.info("Generating HTML arguments from DataFrame")
+        
+        try:
+            # Convert numeric columns from strings to floats
+            date_cols = [col for col in table.columns if re.match(r"\d{2}-\d{2}", col)]
+            for col in date_cols:
+                table[col] = pd.to_numeric(table[col], errors='coerce')
+            
+            # Get the most recent 3 date columns
+            recent_cols = date_cols[-3:]  # Last 3 days
+            self.logger.info(f"Using recent date columns: {recent_cols}")
+            
+            # Get unique valid sites - filter out problematic entries like empty strings or NaN
+            raw_sites = table["OIM_Site"].unique().tolist()
+            sites = [site for site in raw_sites if isinstance(site, str) and site.strip() and site != "Unknown"]
+            total_sites = len(sites)
+            
+            # Debug logging for site count
+            self.logger.debug(f"Raw site count: {len(raw_sites)}")
+            self.logger.debug(f"Filtered site count: {total_sites}")
+            
+            all_zero_sites = 0
+            payload_zero_sites = 0
+            
+            # For debugging - track which sites are counted in each category
+            zero_site_list = []
+            payload_zero_list = []
+            
+            for site in sites:
+                site_data = table[table["OIM_Site"] == site]
+                
+                # Get relevant rows
+                payload_rows = site_data[
+                    (site_data["ResourceType"] == "Payload") &
+                    (site_data["Values"].isin(["#Jobs", "Hours"]))
+                ]
+                
+                batch_rows = site_data[
+                    (site_data["ResourceType"] == "Batch") &
+                    (site_data["Values"].isin(["#Jobs", "Hours"]))
+                ]
+                
+                # Skip sites without required row types (shouldn't happen per your assumption)
+                if payload_rows.empty or batch_rows.empty:
+                    self.logger.warning(f"Site {site} is missing either payload or batch rows - skipping")
+                    continue
+                    
+                # Calculate sums
+                payload_sum = payload_rows[recent_cols].fillna(0).values.sum()
+                batch_sum = batch_rows[recent_cols].fillna(0).values.sum()
+                
+                self.logger.debug(f"Site {site}: Payload sum={payload_sum}, Batch sum={batch_sum}")
+                
+                # Classify the site
+                if payload_sum == 0 and batch_sum == 0:
+                    all_zero_sites += 1
+                    zero_site_list.append(site)
+                    self.logger.debug(f"Site {site} added to all_zero_sites")
+                elif payload_sum == 0 and batch_sum > 0:
+                    payload_zero_sites += 1
+                    payload_zero_list.append(site)
+                    self.logger.debug(f"Site {site} added to payload_zero_sites")
+                    
+            # Log detailed results for debugging
+            self.logger.info(f"All zero sites ({all_zero_sites}): {zero_site_list}")
+            self.logger.info(f"Payload zero sites ({payload_zero_sites}): {payload_zero_list}")
+            
+            result = {
+                "total_sites": total_sites,
+                "all_zero_sites": all_zero_sites,
+                "payload_zero_sites": payload_zero_sites
+            }
+            
+            self.logger.info(f"Generated HTML args: {result}")
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"Error generating HTML args: {str(e)}")
+            self.logger.exception("Exception details:")
+            # Return minimal valid data in case of error
+            return {
+                "total_sites": 0,
+                "all_zero_sites": 0,
+                "payload_zero_sites": 0
+            }
 
 
 
